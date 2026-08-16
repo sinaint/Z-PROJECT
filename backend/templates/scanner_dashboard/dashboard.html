@@ -62,25 +62,26 @@
 <body>
     <h1>🛡️ AI 보안 코파일럿 - 대시보드</h1>
 
-    <!-- 클라우드(S3) 영역 -->
-    <h2 class="section-title">☁️ 클라우드 인프라 (S3)</h2>
+    <!-- 클라우드(S3 / IAM / 보안 그룹) 영역 -->
+    <h2 class="section-title">☁️ 클라우드 인프라 (S3 / IAM / 보안 그룹)</h2>
     <div class="summary">
         <div class="card">
-            <div>전체 버킷 수</div>
+            <div>전체 점검 항목 수</div>
             <h2>{{ cloud_total }}개</h2>
         </div>
         <div class="card danger">
-            <div>공개된 버킷 수</div>
+            <div>위험 발견 수</div>
             <h2>{{ cloud_risky }}개</h2>
         </div>
     </div>
-    <button class="scan-btn" onclick="runScan('/api/scan/cloud/', this)">🔍 S3 스캔 실행</button>
+    <button class="scan-btn" onclick="runScan('/api/scan/cloud/', this)">🔍 클라우드 스캔 실행 (S3+IAM+SG)</button>
 
     <table>
         <thead>
             <tr>
-                <th>버킷 이름</th>
+                <th>대상</th>
                 <th>상태</th>
+                <th>상세</th>
                 <th>AI 설명</th>
                 <th>스캔 시각</th>
             </tr>
@@ -91,16 +92,17 @@
                 <td>{{ item.target }}</td>
                 <td>
                     {% if item.is_risky %}
-                        <span class="status-danger">🚨 공개됨</span>
+                        <span class="status-danger">🚨 위험</span>
                     {% else %}
-                        <span class="status-safe">✅ 비공개</span>
+                        <span class="status-safe">✅ 안전</span>
                     {% endif %}
                 </td>
+                <td class="explanation">{{ item.detail|default:"-" }}</td>
                 <td class="explanation">{{ item.ai_explanation|default:"-" }}</td>
                 <td>{{ item.scanned_at }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4">아직 스캔 결과가 없습니다. 위 버튼을 눌러 스캔을 실행하세요.</td></tr>
+            <tr><td colspan="5">아직 스캔 결과가 없습니다. 위 버튼을 눌러 스캔을 실행하세요.</td></tr>
             {% endfor %}
         </tbody>
     </table>

@@ -26,6 +26,26 @@ DOCUMENTS = [
         ),
     },
     {
+        "id": "iam-mfa-access-key",
+        "category": "cloud",
+        "title": "IAM MFA 및 Access Key 관리",
+        "text": (
+            "IAM 사용자에 MFA(다단계 인증)를 설정하지 않으면 비밀번호만 탈취돼도 계정이 "
+            "뚫릴 수 있어요. 모든 사용자에 MFA를 활성화하고, Access Key는 90일 주기로 "
+            "교체(rotate)하며 더 이상 쓰지 않는 키는 즉시 비활성화하거나 삭제하세요."
+        ),
+    },
+    {
+        "id": "sg-open-port",
+        "category": "cloud",
+        "title": "보안 그룹 인바운드 규칙 최소화",
+        "text": (
+            "보안 그룹에서 0.0.0.0/0(모든 IP)에 SSH(22), RDP(3389), DB 포트(3306, 5432 등)를 "
+            "열어두면 전 세계 누구나 접속을 시도할 수 있어요. 접속이 필요한 특정 IP 대역만 "
+            "허용하거나, VPN이나 Bastion Host를 통해서만 접근하도록 제한하세요."
+        ),
+    },
+    {
         "id": "hardcoded-secret",
         "category": "code",
         "title": "코드에 하드코딩된 시크릿",
