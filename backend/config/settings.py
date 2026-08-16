@@ -27,7 +27,8 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-3*l$arl=v+dvqwt3xr%=27u@37j*+tow5lkw5xu@44by(1mvy+"
+# .env 파일에 SECRET_KEY=... 로 설정하세요. (backend/.env.example 참고)
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
