@@ -10,10 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+import dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# .env 파일(BASE_DIR/.env)에 있는 값들을 환경변수로 불러와요.
+# API 키 같은 민감 정보는 절대 코드에 직접 쓰지 않고 .env에서 읽어요.
+dotenv.load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "scanner_dashboard",
 ]
 
@@ -121,3 +129,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# 우리 프로젝트에서 추가한 설정
+# ------------------------------------------------------------
+
+# Claude API 키. .env 파일에 ANTHROPIC_API_KEY=... 로 설정해두세요.
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
