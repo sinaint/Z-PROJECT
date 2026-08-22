@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ResultsTable, { StatusBadge } from './ResultsTable';
+import ResultsTable, { StatusBadge, formatScannedAt } from './ResultsTable';
 import { runCloudScan } from '../api';
 
 const COLUMNS = [
@@ -7,7 +7,7 @@ const COLUMNS = [
   { key: 'status', label: '상태', render: (item) => <StatusBadge isRisky={item.is_risky} /> },
   { key: 'detail', label: '상세' },
   { key: 'ai_explanation', label: 'AI 설명', className: 'explanation' },
-  { key: 'scanned_at', label: '스캔 시각' },
+  { key: 'scanned_at', label: '스캔 시각', render: (item) => formatScannedAt(item.scanned_at) },
 ];
 
 function CloudSection({ results, onScanDone }) {
