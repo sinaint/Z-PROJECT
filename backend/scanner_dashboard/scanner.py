@@ -90,6 +90,20 @@ def scan_all_buckets():
     return results
 
 
+def _has_console_access(iam_client, username):
+    """
+    이 사용자가 AWS 콘솔에 비밀번호로 로그인할 수 있는지 확인해요.
+    (Access Key로만 쓰는 서비스/스캐너 계정은 보통 콘솔 로그인이 꺼져있어요.)
+    """
+    try:
+        iam_client.get_login_profile(UserName=username)
+        return True
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "NoSuchEntity":
+            return False
+        raise
+
+
 def scan_iam_users():
     """
     IAM 사용자 한 명 한 명을 점검해서 위험 요소가 있는지 찾아요.
@@ -118,9 +132,12 @@ def scan_iam_users():
                 reasons.append("AdministratorAccess 정책이 직접 연결되어 있음")
 
             # 2) MFA(다단계 인증) 등록 여부 확인
-            mfa_devices = iam.list_mfa_devices(UserName=username)["MFADevices"]
-            if not mfa_devices:
-                reasons.append("MFA(다단계 인증)가 설정되어 있지 않음")
+            # 콘솔 로그인 자체가 꺼져있는 사용자(Access Key로만 쓰는 서비스 계정 등)는
+            # 애초에 MFA가 의미 없으니(콘솔 로그인할 때만 쓰는 기능) 검사에서 제외해요.
+            if _has_console_access(iam, username):
+                mfa_devices = iam.list_mfa_devices(UserName=username)["MFADevices"]
+                if not mfa_devices:
+                    reasons.append("MFA(다단계 인증)가 설정되어 있지 않음")
 
             # 3) 활성화된 Access Key가 너무 오래되지 않았는지 확인
             access_keys = iam.list_access_keys(UserName=username)["AccessKeyMetadata"]
