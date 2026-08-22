@@ -4,6 +4,7 @@ GET  /api/scan-results/  : 저장된 스캔 결과 조회
 POST /api/scan/cloud/    : S3 + IAM + 보안 그룹 스캔 실행 + AI 설명 생성 + 저장
 POST /api/scan/code/     : 코드 시크릿 스캔 실행 + AI 설명 생성 + 저장
 POST /api/scan/phishing/ : URL/이메일 본문 하나를 점검 + AI 설명 생성 + 저장 (body: {"input": "..."})
+GET  /api/me/            : 로그인한 사용자 정보 조회 (React가 로그인 여부 판단용으로 써요)
 """
 
 from django.conf import settings
@@ -25,6 +26,12 @@ def _save_finding(category, target, is_risky, detail=""):
         category=category, target=target, is_risky=is_risky,
         detail=detail, ai_explanation=explanation,
     )
+
+
+@api_view(["GET"])
+def whoami(request):
+    """로그인한 사용자의 아이디를 반환해요. (IsAuthenticated라 로그인 안 했으면 여기서 이미 403)"""
+    return Response({"username": request.user.username})
 
 
 @api_view(["GET"])
