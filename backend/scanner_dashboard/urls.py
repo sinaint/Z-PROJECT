@@ -15,4 +15,5 @@ urlpatterns = [
     path("api/scan-results/", api_views.list_scan_results, name="api-scan-results"),
     path("api/scan/cloud/", api_views.run_cloud_scan, name="api-scan-cloud"),
     path("api/scan/code/", api_views.run_code_scan, name="api-scan-code"),
+    path("api/scan/phishing/", api_views.run_phishing_scan, name="api-scan-phishing"),
 ]

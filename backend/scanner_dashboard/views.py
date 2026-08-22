@@ -16,12 +16,15 @@ def dashboard(request):
     """
     cloud_results = ScanResult.objects.filter(category=ScanResult.Category.CLOUD)[:50]
     code_results = ScanResult.objects.filter(category=ScanResult.Category.CODE)[:50]
+    phishing_results = ScanResult.objects.filter(category=ScanResult.Category.PHISHING)[:50]
 
     context = {
         "cloud_results": cloud_results,
         "code_results": code_results,
+        "phishing_results": phishing_results,
         "cloud_total": cloud_results.count(),
         "cloud_risky": sum(1 for r in cloud_results if r.is_risky),
         "code_risky": code_results.count(),
+        "phishing_risky": sum(1 for r in phishing_results if r.is_risky),
     }
     return render(request, "scanner_dashboard/dashboard.html", context)

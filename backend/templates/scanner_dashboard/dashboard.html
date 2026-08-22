@@ -40,6 +40,19 @@
             cursor: pointer;
         }
         button.scan-btn:disabled { opacity: 0.6; cursor: default; }
+        .phishing-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .phishing-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        .phishing-form .scan-btn { margin-bottom: 0; white-space: nowrap; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -74,7 +87,7 @@
             <h2>{{ cloud_risky }}개</h2>
         </div>
     </div>
-    <button class="scan-btn" onclick="runScan('/api/scan/cloud/', this)">🔍 클라우드 스캔 실행 (S3+IAM+SG)</button>
+    <button type="button" class="scan-btn" onclick="runScan('/api/scan/cloud/', this)">🔍 클라우드 스캔 실행 (S3+IAM+SG)</button>
 
     <table>
         <thead>
@@ -115,7 +128,7 @@
             <h2>{{ code_risky }}개</h2>
         </div>
     </div>
-    <button class="scan-btn" onclick="runScan('/api/scan/code/', this)">🔍 코드 스캔 실행</button>
+    <button type="button" class="scan-btn" onclick="runScan('/api/scan/code/', this)">🔍 코드 스캔 실행</button>
 
     <table>
         <thead>
@@ -140,6 +153,51 @@
         </tbody>
     </table>
 
+    <!-- 피싱 영역 -->
+    <h2 class="section-title">🎣 사람 (피싱 URL/이메일)</h2>
+    <div class="summary">
+        <div class="card danger">
+            <div>위험 판정 수</div>
+            <h2>{{ phishing_risky }}개</h2>
+        </div>
+    </div>
+    <div class="phishing-form">
+        <input type="text" id="phishing-input" class="phishing-input"
+               placeholder="의심스러운 URL이나 이메일 본문을 붙여넣으세요 (예: http://naver.com@evil-login.top)">
+        <button type="button" class="scan-btn" onclick="runPhishingScan(this)">🔍 피싱 검사 실행</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>입력값</th>
+                <th>상태</th>
+                <th>상세</th>
+                <th>AI 설명</th>
+                <th>스캔 시각</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in phishing_results %}
+            <tr>
+                <td>{{ item.target }}</td>
+                <td>
+                    {% if item.is_risky %}
+                        <span class="status-danger">🚨 위험</span>
+                    {% else %}
+                        <span class="status-safe">✅ 안전</span>
+                    {% endif %}
+                </td>
+                <td class="explanation">{{ item.detail|default:"-" }}</td>
+                <td class="explanation">{{ item.ai_explanation|default:"-" }}</td>
+                <td>{{ item.scanned_at }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">아직 검사한 URL/이메일이 없습니다. 위 입력창에 붙여넣고 검사해보세요.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <script>
         // 버튼을 누르면 해당 API를 POST로 호출해서 스캔을 실행하고,
         // 끝나면 화면을 새로고침해서 최신 결과(+ AI 설명)를 보여줘요.
@@ -151,6 +209,35 @@
                 const response = await fetch(url, { method: 'POST' });
                 if (!response.ok) {
                     throw new Error('스캔 요청 실패: ' + response.status);
+                }
+                location.reload();
+            } catch (err) {
+                alert(err.message);
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
+        // 피싱 검사는 입력창의 값을 body에 담아서 POST로 보내요.
+        async function runPhishingScan(button) {
+            const input = document.getElementById('phishing-input');
+            const value = input.value.trim();
+            if (!value) {
+                alert('검사할 URL이나 이메일 본문을 입력해주세요.');
+                return;
+            }
+
+            button.disabled = true;
+            const originalText = button.textContent;
+            button.textContent = '검사 중...';
+            try {
+                const response = await fetch('/api/scan/phishing/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input: value }),
+                });
+                if (!response.ok) {
+                    throw new Error('검사 요청 실패: ' + response.status);
                 }
                 location.reload();
             } catch (err) {

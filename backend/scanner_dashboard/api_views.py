@@ -3,13 +3,14 @@ frontend/(React)가 붙을 수 있도록 JSON으로 응답하는 API예요.
 GET  /api/scan-results/  : 저장된 스캔 결과 조회
 POST /api/scan/cloud/    : S3 + IAM + 보안 그룹 스캔 실행 + AI 설명 생성 + 저장
 POST /api/scan/code/     : 코드 시크릿 스캔 실행 + AI 설명 생성 + 저장
+POST /api/scan/phishing/ : URL/이메일 본문 하나를 점검 + AI 설명 생성 + 저장 (body: {"input": "..."})
 """
 
 from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from . import ai_explainer, code_scanner
+from . import ai_explainer, code_scanner, phishing_scanner
 from .models import ScanResult
 from .scanner import scan_all_buckets, scan_iam_users, scan_security_groups
 from .serializers import ScanResultSerializer
@@ -84,3 +85,26 @@ def run_code_scan(request):
             detail=detail,
         ))
     return Response(ScanResultSerializer(saved, many=True).data)
+
+
+@api_view(["POST"])
+def run_phishing_scan(request):
+    """
+    URL 하나 또는 이메일 본문 텍스트를 점검하고, AI 설명을 붙여서 DB에 저장해요.
+    요청 body 예시: {"input": "http://naver.com@evil-login.top"}
+    """
+    raw_input = (request.data.get("input") or "").strip()
+    if not raw_input:
+        return Response({"error": "input 값이 비어있어요."}, status=400)
+
+    result = phishing_scanner.scan_input(raw_input)
+    # 화면 표에서 너무 길게 안 보이도록 대상 텍스트는 앞부분만 잘라서 저장해요.
+    target = raw_input if len(raw_input) <= 100 else raw_input[:100] + "..."
+
+    saved = _save_finding(
+        category=ScanResult.Category.PHISHING,
+        target=target,
+        is_risky=result["is_risky"],
+        detail=", ".join(result["reasons"]),
+    )
+    return Response(ScanResultSerializer(saved).data)
