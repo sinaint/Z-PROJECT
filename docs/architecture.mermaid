@@ -1,0 +1,48 @@
+flowchart TD
+    subgraph Client["🖥️ 브라우저"]
+        UI["대시보드<br/>dashboard.html"]
+    end
+
+    subgraph Django["🐍 Django 백엔드 (backend/scanner_dashboard)"]
+        Views["views.py<br/>대시보드 렌더링"]
+        API["api_views.py<br/>REST API"]
+        Models[("ScanResult 모델")]
+
+        subgraph Scanners["스캐너 모듈"]
+            CloudScanner["scanner.py<br/>S3 · IAM · 보안그룹"]
+            CodeScanner["code_scanner.py<br/>하드코딩 시크릿"]
+            PhishingScanner["phishing_scanner.py<br/>URL · 이메일 규칙 기반"]
+        end
+
+        subgraph RAG["AI 설명 (RAG)"]
+            Explainer["ai_explainer.py"]
+            KB["knowledge_base.py<br/>키워드 기반 문서 검색"]
+        end
+    end
+
+    subgraph External["☁️ 외부 서비스"]
+        AWS[("AWS<br/>S3 · IAM · EC2")]
+        Claude[("Anthropic Claude API")]
+    end
+
+    SQLite[("SQLite<br/>db.sqlite3")]
+
+    UI -- "GET /" --> Views
+    UI -- "POST /api/scan/cloud|code|phishing/" --> API
+    Views --> Models
+
+    API --> CloudScanner
+    API --> CodeScanner
+    API --> PhishingScanner
+
+    CloudScanner -- "boto3" --> AWS
+
+    CloudScanner --> Explainer
+    CodeScanner --> Explainer
+    PhishingScanner --> Explainer
+    Explainer -- "1) 관련 문서 검색" --> KB
+    Explainer -- "2) 설명 생성 요청" --> Claude
+
+    Explainer --> API
+    API --> Models
+    Models --> SQLite
