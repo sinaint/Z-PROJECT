@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import ResultsTable from './ResultsTable';
+import ResultsTable, { formatScannedAt } from './ResultsTable';
 import { runCodeScan } from '../api';
 
 const COLUMNS = [
   { key: 'target', label: '파일 위치' },
   { key: 'detail', label: '상세', className: 'explanation' },
   { key: 'ai_explanation', label: 'AI 설명', className: 'explanation' },
-  { key: 'scanned_at', label: '스캔 시각' },
+  { key: 'scanned_at', label: '스캔 시각', render: (item) => formatScannedAt(item.scanned_at) },
 ];
 
 function CodeSection({ results, onScanDone }) {

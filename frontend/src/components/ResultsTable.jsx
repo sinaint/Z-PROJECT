@@ -32,6 +32,16 @@ function ResultsTable({ columns, rows, emptyMessage }) {
   );
 }
 
+// 서버가 주는 ISO 문자열(2026-08-22T12:30:55...)을 Django 템플릿과 비슷한
+// 사람이 읽기 편한 형식으로 바꿔줘요.
+export function formatScannedAt(value) {
+  if (!value) return '-';
+  return new Date(value).toLocaleString('ko-KR', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  });
+}
+
 export function StatusBadge({ isRisky }) {
   return isRisky ? (
     <span className="status-danger">🚨 위험</span>

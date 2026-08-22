@@ -41,7 +41,7 @@ function App() {
   return (
     <div className="dashboard">
       <div className="header-row">
-        <h1>🛡️ AI 보안 코파일럿 - 대시보드</h1>
+        <h1>🛡️ Aegis - AI 보안 코파일럿</h1>
         <div className="logout-form">
           <span className="whoami">{username}님</span>
           <button type="button" className="logout-btn" onClick={logout}>
