@@ -16,6 +16,21 @@
             padding: 40px;
         }
         h1 { color: #222; }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-form { display: flex; align-items: center; gap: 10px; }
+        .whoami { color: #666; font-size: 0.9em; }
+        .logout-btn {
+            padding: 8px 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: white;
+            color: #333;
+            cursor: pointer;
+        }
         h2.section-title { margin-top: 50px; }
         .summary {
             display: flex;
@@ -73,7 +88,14 @@
     </style>
 </head>
 <body>
-    <h1>🛡️ AI 보안 코파일럿 - 대시보드</h1>
+    <div class="header-row">
+        <h1>🛡️ AI 보안 코파일럿 - 대시보드</h1>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <span class="whoami">{{ user.username }}님</span>
+            <button type="submit" class="logout-btn">로그아웃</button>
+        </form>
+    </div>
 
     <!-- 클라우드(S3 / IAM / 보안 그룹) 영역 -->
     <h2 class="section-title">☁️ 클라우드 인프라 (S3 / IAM / 보안 그룹)</h2>
@@ -199,6 +221,13 @@
     </table>
 
     <script>
+        // 로그인한 사용자의 POST 요청은 CSRF 토큰이 있어야 통과돼요.
+        // Django가 심어둔 csrftoken 쿠키에서 값을 꺼내와요.
+        function getCsrfToken() {
+            const match = document.cookie.match(/csrftoken=([^;]+)/);
+            return match ? match[1] : '';
+        }
+
         // 버튼을 누르면 해당 API를 POST로 호출해서 스캔을 실행하고,
         // 끝나면 화면을 새로고침해서 최신 결과(+ AI 설명)를 보여줘요.
         async function runScan(url, button) {
@@ -206,7 +235,10 @@
             const originalText = button.textContent;
             button.textContent = '스캔 중... (AI 설명 생성에 시간이 걸릴 수 있어요)';
             try {
-                const response = await fetch(url, { method: 'POST' });
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCsrfToken() },
+                });
                 if (!response.ok) {
                     throw new Error('스캔 요청 실패: ' + response.status);
                 }
@@ -233,7 +265,10 @@
             try {
                 const response = await fetch('/api/scan/phishing/', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
                     body: JSON.stringify({ input: value }),
                 });
                 if (!response.ok) {

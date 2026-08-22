@@ -137,3 +137,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Claude API 키. .env 파일에 ANTHROPIC_API_KEY=... 로 설정해두세요.
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+# 로그인 관련 설정
+# ------------------------------------------------------------
+# 로그인 안 된 상태로 대시보드에 접속하면 이 이름의 URL로 보내져요.
+# (django.contrib.auth.urls가 'login'이라는 이름으로 accounts/login/ 을 제공해요)
+LOGIN_URL = "login"
+# 로그인/로그아웃 성공하면 대시보드로 돌아가요.
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "dashboard"
+
+# REST API도 로그인한 사용자만 쓸 수 있게 해요.
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
